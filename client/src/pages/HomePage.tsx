@@ -30,6 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Search, Bell, Menu, MessageCircle, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import inspectionImage from '@assets/generated_images/AI_food_quality_inspection_2d05afb7.png';
+import foodLoopLogo from '@assets/PHOTO-2025-11-08-14-22-08_1762633632382.jpg';
+import { Link } from "wouter";
 
 export default function HomePage() {
   const { toast } = useToast();
@@ -109,15 +111,13 @@ export default function HomePage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-8">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary rounded-md">
-                  <span className="material-icons text-primary-foreground">eco</span>
-                </div>
+                <img src={foodLoopLogo} alt="FoodLoop AI" className="h-10 w-10 rounded-md" />
                 <span className="font-bold text-xl">FoodLoop AI</span>
               </div>
               
               <nav className="hidden md:flex items-center gap-6">
-                <a href="#" className="text-sm font-medium hover:text-primary">Find Food</a>
-                <a href="#" className="text-sm font-medium hover:text-primary">Post Food</a>
+                <Link href="/map" className="text-sm font-medium hover:text-primary">Find Food</Link>
+                <button onClick={() => setShowPostForm(true)} className="text-sm font-medium hover:text-primary">Post Food</button>
                 <a href="#" className="text-sm font-medium hover:text-primary">Monitor</a>
                 <a href="#" className="text-sm font-medium hover:text-primary">Impact</a>
               </nav>
@@ -160,7 +160,7 @@ export default function HomePage() {
       <main>
         <HeroSection
           onPostFood={() => setShowPostForm(true)}
-          onFindFood={() => document.getElementById('food-listings')?.scrollIntoView({ behavior: 'smooth' })}
+          onFindFood={() => window.location.href = '/map'}
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
@@ -268,9 +268,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <div className="p-2 bg-primary rounded-md">
-                  <span className="material-icons text-primary-foreground">eco</span>
-                </div>
+                <img src={foodLoopLogo} alt="FoodLoop AI" className="h-10 w-10 rounded-md" />
                 <span className="font-bold text-xl">FoodLoop AI</span>
               </div>
               <p className="text-muted-foreground mb-4">
@@ -336,8 +334,8 @@ export default function HomePage() {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-4 mt-8">
-            <a href="#" className="text-lg font-medium hover:text-primary">Find Food</a>
-            <a href="#" className="text-lg font-medium hover:text-primary">Post Food</a>
+            <Link href="/map" className="text-lg font-medium hover:text-primary">Find Food</Link>
+            <button onClick={() => { setShowPostForm(true); setShowMobileMenu(false); }} className="text-lg font-medium hover:text-primary text-left">Post Food</button>
             <a href="#" className="text-lg font-medium hover:text-primary">Monitor</a>
             <a href="#" className="text-lg font-medium hover:text-primary">Impact</a>
           </nav>
