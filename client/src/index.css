@@ -285,4 +285,18 @@
   .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
     inset: -1px;
   }
+
+  /* Map animation for user location pulse */
+  @keyframes pulse-animation {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  .pulse-animation {
+    animation: pulse-animation 2s ease-in-out infinite;
+  }
 }
