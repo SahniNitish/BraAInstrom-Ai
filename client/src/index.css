@@ -35,6 +35,34 @@
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
+.dark {
+  --primary: #3b82f6;
+  --primary-dark: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --destructive: #ef4444;
+  --destructive-foreground: #ffffff;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --popover: #1e293b;
+  --popover-foreground: #f8fafc;
+  --border: #334155;
+  --input: #334155;
+  --ring: #3b82f6;
+  --radius: 0.5rem;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.6;
@@ -501,7 +529,74 @@ div[class*="ImpactDashboard"] .card {
 .to-purple-600 { --tw-gradient-to: #9333ea; }
 
 /* Dark mode support */
-.dark { color-scheme: dark; }
+.dark { 
+  color-scheme: dark; 
+}
+
+/* Dark mode specific overrides */
+.dark .bg-gray-50 { background-color: #1e293b; }
+.dark .bg-gray-100 { background-color: #334155; }
+.dark .bg-gray-200 { background-color: #475569; }
+.dark .text-gray-500 { color: #94a3b8; }
+.dark .text-gray-600 { color: #cbd5e1; }
+.dark .text-gray-700 { color: #e2e8f0; }
+.dark .text-gray-800 { color: #f1f5f9; }
+.dark .text-gray-900 { color: #f8fafc; }
+.dark .border-gray-200 { border-color: #334155; }
+.dark .border-gray-300 { border-color: #475569; }
+
+/* Dark theme button styles */
+.dark button[class*="Button"] {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.dark .btn-secondary {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
+}
+
+/* Dark theme status colors */
+.dark .bg-emerald-100 { background-color: #064e3b; }
+.dark .text-emerald-800 { color: #6ee7b7; }
+.dark .bg-red-100 { background-color: #7f1d1d; }
+.dark .text-red-800 { color: #fca5a5; }
+.dark .bg-yellow-100 { background-color: #78350f; }
+.dark .text-yellow-800 { color: #fcd34d; }
+.dark .bg-blue-100 { background-color: #1e3a8a; }
+.dark .text-blue-800 { color: #93c5fd; }
+
+/* Dark theme navigation */
+.dark nav {
+  background-color: var(--card);
+  border-bottom-color: var(--border);
+}
+
+/* Dark theme inputs */
+.dark input, .dark textarea, .dark select {
+  background-color: var(--background);
+  border-color: var(--input);
+  color: var(--foreground);
+}
+
+.dark input:focus, .dark textarea:focus, .dark select:focus {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Dark theme hero gradient */
+.dark .hero-gradient {
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+}
+
+.dark .hero h1 {
+  background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
 
 /* Medium breakpoint */
 @media (min-width: 768px) {
@@ -679,4 +774,81 @@ a:hover {
 .safety-poor { 
   background-color: #ef4444; 
   color: white; 
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 3rem;
+  height: 3rem;
+  border-radius: 50%;
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 50;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-xl);
+}
+
+.theme-toggle .sun-icon {
+  display: block;
+  color: var(--foreground);
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.theme-toggle .moon-icon {
+  display: none;
+  color: var(--foreground);
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.dark .theme-toggle .sun-icon {
+  display: none;
+}
+
+.dark .theme-toggle .moon-icon {
+  display: block;
+}
+
+/* System preference detection */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --primary-foreground: #ffffff;
+    --secondary: #1e293b;
+    --secondary-foreground: #f8fafc;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --accent: #1e293b;
+    --accent-foreground: #f8fafc;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --background: #0f172a;
+    --foreground: #f8fafc;
+    --card: #1e293b;
+    --card-foreground: #f8fafc;
+    --popover: #1e293b;
+    --popover-foreground: #f8fafc;
+    --border: #334155;
+    --input: #334155;
+    --ring: #3b82f6;
+    --radius: 0.5rem;
+    --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  }
 }
