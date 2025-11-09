@@ -15,15 +15,13 @@ export default defineConfig({
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
-      onwarn(warning, warn) {
-        // Suppress TypeScript warnings during build
-        if (warning.code === 'UNRESOLVED_IMPORT') return;
-        if (warning.message.includes('Module level directives cause errors')) return;
-        warn(warning);
-      }
+      external: [],
+      output: {
+        manualChunks: undefined,
+      },
     },
   },
-  define: {
-    global: 'globalThis',
-  },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 });
