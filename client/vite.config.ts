@@ -26,6 +26,8 @@ export default defineConfig({
     global: 'globalThis',
   },
   css: {
-    postcss: false,
+    postcss: {
+      plugins: [],
+    },
   },
 });
