@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertFoodListingSchema, insertSensorDataSchema } from "@shared/schema";
+import { insertFoodListingSchema, insertSensorDataSchema, insertOrganizationSchema, insertSupplierSchema } from "@shared/schema";
 import multer from "multer";
 import path from "path";
 import { promises as fs } from "fs";
@@ -130,6 +130,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const validated = insertFoodListingSchema.parse(data);
       const listing = await storage.createFoodListing(validated);
+      
+      // Send notifications to nearby organizations
+      await storage.notifyNearbyOrganizations(listing);
+      
       res.status(201).json(listing);
     } catch (error: any) {
       console.error("Error creating food listing:", error);
@@ -197,6 +201,180 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Error creating sensor data:", error);
       res.status(400).json({ error: error.message || "Failed to create sensor data" });
+    }
+  });
+
+  // Organization Routes
+  
+  // Get all organizations
+  app.get("/api/organizations", async (req, res) => {
+    try {
+      const type = req.query.type as string;
+      const organizations = type 
+        ? await storage.getOrganizationsByType(type)
+        : await storage.getAllOrganizations();
+      res.json(organizations);
+    } catch (error) {
+      console.error("Error fetching organizations:", error);
+      res.status(500).json({ error: "Failed to fetch organizations" });
+    }
+  });
+
+  // Get single organization
+  app.get("/api/organizations/:id", async (req, res) => {
+    try {
+      const organization = await storage.getOrganization(req.params.id);
+      if (!organization) {
+        return res.status(404).json({ error: "Organization not found" });
+      }
+      res.json(organization);
+    } catch (error) {
+      console.error("Error fetching organization:", error);
+      res.status(500).json({ error: "Failed to fetch organization" });
+    }
+  });
+
+  // Register new organization
+  app.post("/api/organizations", async (req, res) => {
+    try {
+      const validated = insertOrganizationSchema.parse(req.body);
+      const organization = await storage.createOrganization(validated);
+      res.status(201).json(organization);
+    } catch (error: any) {
+      console.error("Error creating organization:", error);
+      res.status(400).json({ error: error.message || "Failed to create organization" });
+    }
+  });
+
+  // Supplier Routes
+  
+  // Get all suppliers
+  app.get("/api/suppliers", async (req, res) => {
+    try {
+      const suppliers = await storage.getAllSuppliers();
+      res.json(suppliers);
+    } catch (error) {
+      console.error("Error fetching suppliers:", error);
+      res.status(500).json({ error: "Failed to fetch suppliers" });
+    }
+  });
+
+  // Get single supplier
+  app.get("/api/suppliers/:id", async (req, res) => {
+    try {
+      const supplier = await storage.getSupplier(req.params.id);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+      res.json(supplier);
+    } catch (error) {
+      console.error("Error fetching supplier:", error);
+      res.status(500).json({ error: "Failed to fetch supplier" });
+    }
+  });
+
+  // Get supplier by user ID
+  app.get("/api/suppliers/user/:userId", async (req, res) => {
+    try {
+      const supplier = await storage.getSupplierByUserId(req.params.userId);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found for this user" });
+      }
+      res.json(supplier);
+    } catch (error) {
+      console.error("Error fetching supplier:", error);
+      res.status(500).json({ error: "Failed to fetch supplier" });
+    }
+  });
+
+  // Register new supplier
+  app.post("/api/suppliers", async (req, res) => {
+    try {
+      const validated = insertSupplierSchema.parse(req.body);
+      const supplier = await storage.createSupplier(validated);
+      res.status(201).json(supplier);
+    } catch (error: any) {
+      console.error("Error creating supplier:", error);
+      res.status(400).json({ error: error.message || "Failed to create supplier" });
+    }
+  });
+
+  // AI Supplier Analysis Route
+  app.get("/api/suppliers/:id/analysis", async (req, res) => {
+    try {
+      const supplier = await storage.getSupplier(req.params.id);
+      if (!supplier) {
+        return res.status(404).json({ error: "Supplier not found" });
+      }
+
+      // Calculate current safety rating
+      const safetyRating = storage.calculateSupplierSafetyRating(supplier);
+      
+      // Update supplier with new rating
+      await storage.updateSupplier(supplier.id, { safetyRating });
+
+      const analysis = {
+        supplierId: supplier.id,
+        businessName: supplier.businessName,
+        safetyRating: safetyRating,
+        verification: {
+          licenseValid: supplier.licenseExpiryDate ? supplier.licenseExpiryDate > new Date() : false,
+          licenseNumber: supplier.licenseNumber,
+          licenseExpiryDate: supplier.licenseExpiryDate,
+          verificationStatus: supplier.verificationStatus
+        },
+        performance: {
+          totalListings: supplier.totalListings,
+          successfulDeliveries: supplier.successfulDeliveries,
+          successRate: supplier.totalListings > 0 ? supplier.successfulDeliveries / supplier.totalListings : 0
+        },
+        reputation: {
+          googleRating: supplier.googleRating,
+          googlePlaceId: supplier.googlePlaceId,
+          accountAge: Math.floor((Date.now() - supplier.createdAt.getTime()) / (1000 * 60 * 60 * 24))
+        },
+        riskFactors: [
+          ...(supplier.licenseExpiryDate && supplier.licenseExpiryDate <= new Date() ? ["Expired license"] : []),
+          ...(supplier.googleRating && supplier.googleRating < 3.5 ? ["Low Google rating"] : []),
+          ...(supplier.successfulDeliveries < 5 ? ["Limited delivery history"] : []),
+          ...(supplier.verificationStatus !== "verified" ? ["Unverified account"] : [])
+        ],
+        recommendations: safetyRating >= 4.0 ? ["Highly recommended supplier"] :
+                        safetyRating >= 3.0 ? ["Proceed with normal caution"] :
+                        ["Extra verification recommended", "Consider requesting additional documentation"]
+      };
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing supplier:", error);
+      res.status(500).json({ error: "Failed to analyze supplier" });
+    }
+  });
+
+  // Notification Routes
+  
+  // Get notifications for an organization
+  app.get("/api/notifications/:orgId", async (req, res) => {
+    try {
+      const notifications = await storage.getNotificationsForOrganization(req.params.orgId);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ error: "Failed to fetch notifications" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch("/api/notifications/:id/read", async (req, res) => {
+    try {
+      const success = await storage.markNotificationAsRead(req.params.id);
+      if (!success) {
+        return res.status(404).json({ error: "Notification not found" });
+      }
+      res.json({ message: "Notification marked as read" });
+    } catch (error) {
+      console.error("Error updating notification:", error);
+      res.status(500).json({ error: "Failed to update notification" });
     }
   });
 

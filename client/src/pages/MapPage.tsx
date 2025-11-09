@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getFoodListings } from "@/lib/api";
+import Navigation from "@/components/Navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, MapPin, Search, Navigation, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Search, Navigation as NavigationIcon, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import type { FoodListing } from "@shared/schema";
@@ -100,36 +101,23 @@ export default function MapPage() {
 
   return (
     <div className="h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <Link href="/">
-                <Button variant="ghost" size="icon" data-testid="button-back">
-                  <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <img src={foodLoopLogo} alt="FoodLoop AI" className="h-8 w-8 rounded-md" />
-                <span className="font-bold text-lg">Find Food Nearby</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleMyLocation}
-                data-testid="button-my-location"
-              >
-                <Navigation className="h-4 w-4 mr-2" />
-                My Location
-              </Button>
-            </div>
-          </div>
+      <Navigation />
+      
+      {/* Map Controls */}
+      <div className="border-b bg-background px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <h1 className="text-xl font-bold">Find Food Nearby</h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleMyLocation}
+            data-testid="button-my-location"
+          >
+            <NavigationIcon className="h-4 w-4 mr-2" />
+            My Location
+          </Button>
         </div>
-      </header>
+      </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Map View */}

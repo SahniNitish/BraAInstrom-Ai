@@ -2,42 +2,30 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { getFoodListings, updateFoodListing } from "@/lib/api";
+import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import FoodListingCard from "@/components/FoodListingCard";
 import MapView from "@/components/MapView";
 import ImpactDashboard from "@/components/ImpactDashboard";
-import SensorMonitorPanel from "@/components/SensorMonitorPanel";
-import QualityInspectionResult from "@/components/QualityInspectionResult";
 import PostFoodForm from "@/components/PostFoodForm";
 import AIAssistantChat from "@/components/AIAssistantChat";
-import ThemeToggle from "@/components/ThemeToggle";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Search, Bell, Menu, MessageCircle, Loader2 } from "lucide-react";
+import { MessageCircle, Loader2, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import inspectionImage from '@assets/generated_images/AI_food_quality_inspection_2d05afb7.png';
-import foodLoopLogo from '@assets/PHOTO-2025-11-08-14-22-08_1762633632382.jpg';
 import { Link } from "wouter";
 
 export default function HomePage() {
   const { toast } = useToast();
   const [showPostForm, setShowPostForm] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
 
   const { data: foodListings, isLoading } = useQuery({
     queryKey: ["/api/food-listings"],
@@ -84,19 +72,6 @@ export default function HomePage() {
     })),
   ];
 
-  const mockSensorReadings = [
-    { temperature: 38, humidity: 65, lastUpdate: "2 min ago", status: "normal" as const },
-  ];
-
-  const mockQualityResult = {
-    defects: 0,
-    colorChange: "low" as const,
-    bruising: "none" as const,
-    packaging: "good" as const,
-    shelfLifeDays: 5,
-    confidence: 96,
-  };
-
   const impactStats = {
     mealsProvided: (foodListings?.length || 0) * 15,
     poundsSaved: (foodListings?.length || 0) * 25,
@@ -106,56 +81,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-8">
-              <div className="flex items-center gap-2">
-                <img src={foodLoopLogo} alt="FoodLoop AI" className="h-10 w-10 rounded-md" />
-                <span className="font-bold text-xl">FoodLoop AI</span>
-              </div>
-              
-              <nav className="hidden md:flex items-center gap-6">
-                <Link href="/map" className="text-sm font-medium hover:text-primary">Find Food</Link>
-                <button onClick={() => setShowPostForm(true)} className="text-sm font-medium hover:text-primary">Post Food</button>
-                <a href="#" className="text-sm font-medium hover:text-primary">Monitor</a>
-                <a href="#" className="text-sm font-medium hover:text-primary">Impact</a>
-              </nav>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="hidden md:flex items-center gap-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search food..."
-                    className="pl-9 w-64"
-                    data-testid="input-search"
-                  />
-                </div>
-                <Button variant="ghost" size="icon" data-testid="button-notifications">
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-destructive">
-                    3
-                  </Badge>
-                  <Bell className="h-5 w-5" />
-                </Button>
-              </div>
-              
-              <ThemeToggle />
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                className="md:hidden"
-                onClick={() => setShowMobileMenu(true)}
-                data-testid="button-mobile-menu"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Navigation />
 
       <main>
         <HeroSection
@@ -164,13 +90,14 @@ export default function HomePage() {
         />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+          {/* Available Food Section */}
           <section id="food-listings">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-3xl font-bold mb-2">Available Food</h2>
                 <p className="text-muted-foreground">Fresh surplus food in your area</p>
               </div>
-              <Button onClick={() => setShowPostForm(true)} data-testid="button-post-food">
+              <Button onClick={() => setShowPostForm(true)}>
                 <span className="material-icons text-sm mr-2">add_circle</span>
                 Post Food
               </Button>
@@ -178,11 +105,11 @@ export default function HomePage() {
 
             <Tabs defaultValue="list" className="mb-6">
               <TabsList>
-                <TabsTrigger value="list" data-testid="tab-list-view">
+                <TabsTrigger value="list">
                   <span className="material-icons text-sm mr-2">view_list</span>
                   List View
                 </TabsTrigger>
-                <TabsTrigger value="map" data-testid="tab-map-view">
+                <TabsTrigger value="map">
                   <span className="material-icons text-sm mr-2">map</span>
                   Map View
                 </TabsTrigger>
@@ -195,7 +122,7 @@ export default function HomePage() {
                   </div>
                 ) : foodListings && foodListings.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {foodListings.map((listing) => (
+                    {foodListings.slice(0, 6).map((listing) => (
                       <FoodListingCard
                         key={listing.id}
                         id={listing.id}
@@ -220,6 +147,17 @@ export default function HomePage() {
                     </Button>
                   </div>
                 )}
+                
+                {foodListings && foodListings.length > 6 && (
+                  <div className="text-center mt-6">
+                    <Button variant="outline" asChild>
+                      <Link href="/map">
+                        View All {foodListings.length} Listings
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               <TabsContent value="map" className="mt-6">
@@ -228,35 +166,94 @@ export default function HomePage() {
             </Tabs>
           </section>
 
-          <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <ImpactDashboard stats={impactStats} />
-            </div>
-            <div className="space-y-6">
-              <SensorMonitorPanel
-                readings={mockSensorReadings}
-                locationName="Community Fridge #1"
-              />
-            </div>
+          {/* Impact Dashboard */}
+          <section>
+            <ImpactDashboard stats={impactStats} />
           </section>
 
-          <section>
-            <h2 className="text-3xl font-bold mb-6">AI Quality Inspection</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <QualityInspectionResult
-                result={mockQualityResult}
-                imageUrl={inspectionImage}
-              />
-              <div className="bg-muted/50 rounded-md p-8 flex flex-col items-center justify-center text-center">
-                <span className="material-icons text-6xl text-muted-foreground mb-4">photo_camera</span>
-                <h3 className="text-xl font-semibold mb-2">Upload for AI Analysis</h3>
-                <p className="text-muted-foreground mb-6">
-                  Get instant quality assessment with computer vision
+          {/* Quick Links */}
+          <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link href="/organizations">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6 text-center">
+                  <div className="text-4xl mb-4">🏛️</div>
+                  <h3 className="font-semibold mb-2">Organizations</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Register NGOs and view all registered organizations
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/suppliers">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6 text-center">
+                  <div className="text-4xl mb-4">🏪</div>
+                  <h3 className="font-semibold mb-2">Suppliers</h3>
+                  <p className="text-sm text-muted-foreground">
+                    View businesses with AI safety ratings and analysis
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/notifications">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6 text-center">
+                  <div className="text-4xl mb-4">🔔</div>
+                  <h3 className="font-semibold mb-2">Notifications</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Real-time alerts for food availability near you
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/admin">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="pt-6 text-center">
+                  <div className="text-4xl mb-4">⚙️</div>
+                  <h3 className="font-semibold mb-2">Dashboard</h3>
+                  <p className="text-sm text-muted-foreground">
+                    System overview and management panel
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+          </section>
+
+          {/* Features Overview */}
+          <section className="bg-muted/50 rounded-lg p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold mb-4">How FoodLoop AI Works</h2>
+              <p className="text-muted-foreground text-lg">
+                Connecting surplus food with those in need through AI-powered technology
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="text-center">
+                <div className="text-5xl mb-4">🍎</div>
+                <h3 className="font-semibold mb-2">Post Food</h3>
+                <p className="text-sm text-muted-foreground">
+                  Restaurants and suppliers post surplus food with AI quality analysis
                 </p>
-                <Button onClick={() => setShowPostForm(true)}>
-                  <span className="material-icons text-sm mr-2">upload</span>
-                  Upload Photo
-                </Button>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-5xl mb-4">🔔</div>
+                <h3 className="font-semibold mb-2">Auto Notify</h3>
+                <p className="text-sm text-muted-foreground">
+                  Nearby NGOs and organizations get instant notifications
+                </p>
+              </div>
+              
+              <div className="text-center">
+                <div className="text-5xl mb-4">🤖</div>
+                <h3 className="font-semibold mb-2">AI Verification</h3>
+                <p className="text-sm text-muted-foreground">
+                  Suppliers get safety ratings based on licenses and reviews
+                </p>
               </div>
             </div>
           </section>
@@ -265,55 +262,15 @@ export default function HomePage() {
 
       <footer className="border-t mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <img src={foodLoopLogo} alt="FoodLoop AI" className="h-10 w-10 rounded-md" />
-                <span className="font-bold text-xl">FoodLoop AI</span>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                Reducing food waste through AI-powered redistribution. 
-                Connecting surplus food with communities in need.
-              </p>
-              <div className="flex gap-4">
-                <Badge className="bg-primary/10 text-primary">
-                  <span className="material-icons text-xs mr-1">verified</span>
-                  AI Certified
-                </Badge>
-                <Badge className="bg-primary/10 text-primary">
-                  <span className="material-icons text-xs mr-1">eco</span>
-                  Carbon Neutral
-                </Badge>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Platform</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">Find Food</a></li>
-                <li><a href="#" className="hover:text-foreground">Post Food</a></li>
-                <li><a href="#" className="hover:text-foreground">Monitor</a></li>
-                <li><a href="#" className="hover:text-foreground">Impact Dashboard</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><a href="#" className="hover:text-foreground">About Us</a></li>
-                <li><a href="#" className="hover:text-foreground">AI Technology</a></li>
-                <li><a href="#" className="hover:text-foreground">Partners</a></li>
-                <li><a href="#" className="hover:text-foreground">Contact</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className="border-t mt-8 pt-8 text-center text-sm text-muted-foreground">
-            <p>© 2025 FoodLoop AI. Powered by Computer Vision, NLP & IoT.</p>
+          <div className="text-center">
+            <p className="text-muted-foreground">
+              © 2025 FoodLoop AI. Reducing food waste through intelligent redistribution.
+            </p>
           </div>
         </div>
       </footer>
 
+      {/* Post Food Dialog */}
       <Dialog open={showPostForm} onOpenChange={setShowPostForm}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -328,20 +285,7 @@ export default function HomePage() {
         </DialogContent>
       </Dialog>
 
-      <Sheet open={showMobileMenu} onOpenChange={setShowMobileMenu}>
-        <SheetContent side="left">
-          <SheetHeader>
-            <SheetTitle>Menu</SheetTitle>
-          </SheetHeader>
-          <nav className="flex flex-col gap-4 mt-8">
-            <Link href="/map" className="text-lg font-medium hover:text-primary">Find Food</Link>
-            <button onClick={() => { setShowPostForm(true); setShowMobileMenu(false); }} className="text-lg font-medium hover:text-primary text-left">Post Food</button>
-            <a href="#" className="text-lg font-medium hover:text-primary">Monitor</a>
-            <a href="#" className="text-lg font-medium hover:text-primary">Impact</a>
-          </nav>
-        </SheetContent>
-      </Sheet>
-
+      {/* AI Chat */}
       {showChat && (
         <div className="fixed bottom-24 right-4 z-50 shadow-xl">
           <AIAssistantChat onClose={() => setShowChat(false)} />
@@ -352,7 +296,6 @@ export default function HomePage() {
         size="lg"
         className="fixed bottom-4 right-4 z-40 rounded-full h-14 w-14 shadow-lg"
         onClick={() => setShowChat(!showChat)}
-        data-testid="button-open-chat"
       >
         <MessageCircle className="h-6 w-6" />
       </Button>

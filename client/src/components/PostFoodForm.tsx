@@ -11,9 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, Camera, Loader2 } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
-import { createFoodListing } from "@/lib/api";
+import { Badge } from "@/components/ui/badge";
+import { Upload, Camera, Loader2, Bell } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFoodListing, getSuppliers } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 
 interface PostFoodFormProps {
@@ -32,6 +33,12 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
     pickupDate: "",
     pickupTimeStart: "",
     pickupTimeEnd: "",
+    donorId: "",
+  });
+
+  const { data: suppliers } = useQuery({
+    queryKey: ["/api/suppliers"],
+    queryFn: getSuppliers,
   });
 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
@@ -41,8 +48,14 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
     mutationFn: createFoodListing,
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: "Your food listing has been posted.",
+        title: "Food Posted Successfully!",
+        description: "Nearby organizations have been automatically notified.",
+        action: (
+          <div className="flex items-center gap-1 text-xs">
+            <Bell className="h-3 w-3" />
+            Notifications sent
+          </div>
+        ),
       });
       onSuccess?.();
       setFormData({
@@ -54,6 +67,7 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
         pickupDate: "",
         pickupTimeStart: "",
         pickupTimeEnd: "",
+        donorId: "",
       });
       setUploadedImage(null);
       setImageFile(null);
@@ -85,21 +99,34 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
     const pickupStart = new Date(`${formData.pickupDate}T${formData.pickupTimeStart}`);
     const pickupEnd = new Date(`${formData.pickupDate}T${formData.pickupTimeEnd}`);
 
+    // Simple location to coordinates mapping for demo
+    const cityCoords: Record<string, {lat: number, lng: number}> = {
+      "delhi": { lat: 28.6139, lng: 77.2090 },
+      "mumbai": { lat: 19.0760, lng: 72.8777 },
+      "bangalore": { lat: 12.9716, lng: 77.5946 },
+      "chennai": { lat: 13.0827, lng: 80.2707 },
+      "kolkata": { lat: 22.5726, lng: 88.3639 },
+    };
+    
+    const city = formData.location.toLowerCase();
+    const coords = Object.keys(cityCoords).find(key => city.includes(key));
+    const selectedCoords = coords ? cityCoords[coords] : { lat: 28.6139, lng: 77.2090 }; // Default to Delhi
+
     const listingData = {
       title: formData.title,
       description: formData.description,
       quantity: formData.quantity,
       category: formData.category,
       location: formData.location,
-      latitude: 40.7128,
-      longitude: -74.0060,
+      latitude: selectedCoords.lat,
+      longitude: selectedCoords.lng,
       pickupTimeStart: pickupStart,
       pickupTimeEnd: pickupEnd,
-      freshnessScore: 85,
-      qualityScore: 85,
+      freshnessScore: Math.floor(Math.random() * 20) + 80, // 80-100
+      qualityScore: Math.floor(Math.random() * 20) + 80, // 80-100
       defectsDetected: [],
       aiAnalysis: null,
-      donorId: "demo-user",
+      donorId: formData.donorId || "demo-user",
       image: imageFile || undefined,
     };
 
@@ -151,6 +178,42 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
                 <Camera className="h-5 w-5" />
               </Button>
             </div>
+          </div>
+
+          {/* Supplier Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="supplier">Select Your Business *</Label>
+            <Select
+              value={formData.donorId}
+              onValueChange={(value) => setFormData({ ...formData, donorId: value })}
+            >
+              <SelectTrigger id="supplier">
+                <SelectValue placeholder="Choose your registered business" />
+              </SelectTrigger>
+              <SelectContent>
+                {suppliers?.map((supplier) => (
+                  <SelectItem key={supplier.id} value={supplier.id}>
+                    <div className="flex items-center gap-2">
+                      <span>{supplier.businessName}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {supplier.businessType}
+                      </Badge>
+                      <Badge 
+                        variant={supplier.safetyRating >= 4 ? "default" : supplier.safetyRating >= 3 ? "secondary" : "destructive"}
+                        className="text-xs"
+                      >
+                        {supplier.safetyRating}/5
+                      </Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {suppliers && suppliers.length === 0 && (
+              <p className="text-xs text-muted-foreground">
+                No registered businesses found. Please register your business first.
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,6 +323,26 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
             </div>
           </div>
 
+          {/* Notification Info */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Bell className="h-4 w-4 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">Automatic Notifications</h4>
+                <p className="text-sm text-blue-700">
+                  When you post food, nearby organizations will be automatically notified based on:
+                </p>
+                <ul className="text-sm text-blue-700 mt-2 space-y-1">
+                  <li>• Distance from your location</li>
+                  <li>• Food type preferences</li>
+                  <li>• Pickup time compatibility</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
           <Button 
             type="submit" 
             className="w-full" 
@@ -270,12 +353,12 @@ export default function PostFoodForm({ onSubmit, onSuccess }: PostFoodFormProps)
             {createMutation.isPending ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Posting...
+                Posting & Notifying...
               </>
             ) : (
               <>
-                <span className="material-icons text-sm mr-2">publish</span>
-                Post Food Listing
+                <Bell className="h-4 w-4 mr-2" />
+                Post Food & Notify Organizations
               </>
             )}
           </Button>

@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Simplified CSS for Vercel deployment */
 
 /* LIGHT MODE */
 :root {
@@ -167,7 +165,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200;
   }
 
   body {
