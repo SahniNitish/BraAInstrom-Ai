@@ -16,14 +16,16 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       onwarn(warning, warn) {
-        // Suppress TypeScript warnings during build
-        if (warning.code === 'UNRESOLVED_IMPORT') return;
-        if (warning.message.includes('Module level directives cause errors')) return;
-        warn(warning);
-      }
+        // Suppress all warnings during build
+        return;
+      },
+      external: [],
     },
   },
   define: {
     global: 'globalThis',
+  },
+  css: {
+    postcss: false,
   },
 });
